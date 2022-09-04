@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,10 +35,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    # 3rd party apps
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+    # My applications
     'common',
     'chat_app',
 ]
+
+AUTH_USER_MODEL = 'common.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -116,3 +123,64 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+DJOSER = {
+    # メールアドレスでログイン
+    'LOGIN_FIELD': 'email',
+    # アカウント本登録メール
+    'SEND_ACTIVATION_EMAIL': True,
+    # アカウント本登録完了メール
+    'SEND_CONFIRMATION_EMAIL': True,
+    # メールアドレス変更完了メール
+    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+    # パスワード変更完了メール
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    # アカウント登録時に確認用パスワード必須
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    # メールアドレス変更時に確認用メールアドレス必須
+    'SET_USERNAME_RETYPE': True,
+    # パスワード変更時に確認用パスワード必須
+    'SET_PASSWORD_RETYPE': True,
+    # アカウント本登録用URL
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    # メールアドレスリセット完了用URL
+    'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
+    # パスワードリセット完了用URL
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+    # カスタムユーザー用シリアライザー
+    'SERIALIZERS': {
+        # 'user_create': 'accounts.serializers.UserSerializer',
+        # 'user': 'accounts.serializers.UserSerializer',
+        # 'current_user': 'accounts.serializers.UserSerializer',
+    },
+    'EMAIL': {
+        # アカウント本登録
+        'activation': 'chat_app.email.ActivationEmail',
+        # アカウント本登録完了
+        'confirmation': 'chat_app.email.ConfirmationEmail',
+        # パスワードリセット
+        'password_reset': 'chat_app.email.PasswordResetEmail',
+        # パスワードリセット完了
+        'password_changed_confirmation': 'chat_app.email.PasswordChangedConfirmationEmail',
+        # メールアドレスリセット
+        'username_reset': 'chat_app.email.UsernameResetEmail',
+        # メールアドレスリセット完了
+        'username_changed_confirmation': 'chat_app.email.UsernameChangedConfirmationEmail',
+    },
+}
